@@ -173,7 +173,7 @@ class FavIcon extends StatelessWidget {
       child: Icon(
         fav != null && fav == true ? Icons.favorite : Icons.favorite_border,
         size: size,
-        color: Colors.white,
+        color: size > 300 ? Colors.pink[200] : Colors.white,
       ),
     );
   }
