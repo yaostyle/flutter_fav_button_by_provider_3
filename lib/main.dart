@@ -22,6 +22,7 @@ class Fav with ChangeNotifier {
   void reset() {
     _isFav = false;
     _count = 0;
+    _scale = 300;
     notifyListeners();
   }
 }
@@ -84,9 +85,9 @@ class _FavButtonState extends State<FavButton>
 
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 1000),
+      duration: Duration(milliseconds: 4000),
       lowerBound: 0.0,
-      upperBound: 1.5,
+      upperBound: 0.5,
     );
 
     _animationController.addListener(() {
@@ -130,7 +131,10 @@ class _FavButtonState extends State<FavButton>
                 fav.update();
                 size = 300;
               },
-              onLongPress: () => Provider.of<Fav>(context).reset(),
+              onLongPress: () {
+                Provider.of<Fav>(context).reset();
+                size = 300;
+              },
               child: FavIcon(fav.status, scale, size),
             ),
             CounterLabel(),
