@@ -66,9 +66,7 @@ class FavButton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            InkWell(
-              highlightColor: Colors.transparent,
-              splashColor: Colors.transparent,
+            GestureDetector(
               onTap: Provider.of<Fav>(context).update,
               child: Icon(
                 fav.status != null && fav.status == true
