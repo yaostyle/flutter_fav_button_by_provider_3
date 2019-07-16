@@ -10,7 +10,7 @@ class Fav with ChangeNotifier {
   int get count => _count;
 
   void update() {
-    _isFav == true ? _isFav = false : _isFav = true;
+    _isFav ? _isFav = false : _isFav = true;
     _count++;
     notifyListeners();
   }
