@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/animation.dart';
 
 void main() => runApp(MyApp());
 
 class Fav with ChangeNotifier {
   int _count = 0;
   bool _isFav = false;
+  double _scale = 300;
   bool get status => _isFav;
   int get count => _count;
+  double get scale => _scale;
 
   void update() {
     _isFav ? _isFav = false : _isFav = true;
     _count++;
+
+    notifyListeners();
+  }
+
+  void reset() {
+    _isFav = false;
+    _count = 0;
     notifyListeners();
   }
 }
@@ -46,7 +56,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
-        title: Text("Fav Button"),
+        title: Text("Fav Button + Counter"),
       ),
       body: FavButton(),
     );
@@ -64,6 +74,8 @@ class _FavButtonState extends State<FavButton>
     with SingleTickerProviderStateMixin {
   AnimationController _animationController;
 
+  double size = 300;
+
   FavIcon favIcon;
 
   @override
@@ -72,8 +84,8 @@ class _FavButtonState extends State<FavButton>
 
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 1500),
-      lowerBound: 0.2,
+      duration: Duration(milliseconds: 1000),
+      lowerBound: 0.0,
       upperBound: 1.5,
     );
 
@@ -82,24 +94,25 @@ class _FavButtonState extends State<FavButton>
     });
   }
 
-  void _onTapDown(TapDownDetails details, bool status) {
-    setState(() {
-      favIcon = FavIcon(status, 1.3);
-    });
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
     _animationController.fling();
   }
 
-  void _onTapUp(TapUpDetails details, bool status) {
-    setState(() {
-      favIcon = FavIcon(status, 1.0);
-    });
+  void _onTapUp(TapUpDetails details) {
     _animationController.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
     final fav = Provider.of<Fav>(context);
-    favIcon = FavIcon(fav.status, 1.0);
+    double scale = 1.0;
+
     return Container(
       color: Colors.pink,
       child: Center(
@@ -108,10 +121,17 @@ class _FavButtonState extends State<FavButton>
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             GestureDetector(
-              onTap: Provider.of<Fav>(context).update,
-              onTapDown: (td) => _onTapDown(td, fav.status),
-              onTapUp: (tu) => _onTapUp(tu, fav.status),
-              child: favIcon,
+              onTapDown: (td) {
+                _onTapDown(td);
+                size = 330;
+              },
+              onTapUp: (tu) {
+                _onTapUp(tu);
+                fav.update();
+                size = 300;
+              },
+              onLongPress: () => Provider.of<Fav>(context).reset(),
+              child: FavIcon(fav.status, scale, size),
             ),
             CounterLabel(),
           ],
@@ -125,17 +145,22 @@ class CounterLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fav = Provider.of<Fav>(context);
-    return Text(
-      "You've clicked ${fav.count} times...",
-      style: TextStyle(fontSize: 24, color: Colors.white),
-    );
+    const textStyle = TextStyle(fontSize: 24, color: Colors.white);
+
+    return fav.count > 0
+        ? Text(
+            "You've clicked ${fav.count} times...",
+            style: textStyle,
+          )
+        : Text(" ", style: textStyle);
   }
 }
 
 class FavIcon extends StatelessWidget {
   final bool fav;
   final double scaleNum;
-  const FavIcon(this.fav, this.scaleNum);
+  final double size;
+  const FavIcon(this.fav, this.scaleNum, this.size);
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +168,7 @@ class FavIcon extends StatelessWidget {
       scale: scaleNum,
       child: Icon(
         fav != null && fav == true ? Icons.favorite : Icons.favorite_border,
-        size: 300.0,
+        size: size,
         color: Colors.white,
       ),
     );
